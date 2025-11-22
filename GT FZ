@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Academia - IMC & TMB</title>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    @keyframes backgroundPan {
+      0% { background-position: 0% 0%; }
+      50% { background-position: 100% 100%; }
+      100% { background-position: 0% 0%; }
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+      background-size: 400% 400%;
+      animation: backgroundPan 30s ease infinite;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    nav {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 50px;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      margin-bottom: 20px;
+    }
+
+    nav .logo { font-family: 'Anton', sans-serif; font-size:28px; color:#e6ddc5; }
+    nav ul { display:flex; list-style:none; gap:25px; }
+    nav ul li a { font-family:'Anton', sans-serif; color:#fff; text-decoration:none; font-size:16px; text-transform:uppercase; transition:color 0.3s; }
+    nav ul li a:hover { color:#e6ddc5; }
+
+    .container { position:relative; width:100%; max-width:900px; display:flex; justify-content:center; align-items:center; flex:1; margin-bottom:40px; min-height:460px; }
+
+    .card {
+      background: #1a1a1a;
+      padding: 30px 40px;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      width: 100%;
+      text-align:center;
+      position: absolute;
+      opacity: 0;
+      transform: translateX(0) scale(0.98);
+      transition: opacity 380ms ease, transform 380ms ease;
+      pointer-events: none; /* impede card invisível de travar clique */
+    }
+
+    .card.active {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      position: relative;
+      pointer-events: all; /* card ativo pode interagir */
+    }
+
+    /* slide/fade minor movement on switch */
+    .anim-enter { opacity:0; transform: translateX(12px) scale(0.98); }
+    .anim-enter.anim-enter-to { opacity:1; transform: translateX(0) scale(1); }
+    .anim-leave { opacity:1; transform: translateX(0) scale(1); }
+    .anim-leave.anim-leave-to { opacity:0; transform: translateX(-12px) scale(0.98); }
+
+    h1 { font-family:'Anton', sans-serif; font-size:32px; margin-bottom:20px; letter-spacing:1px; }
+
+    .form-grid { display:flex; flex-wrap:wrap; gap:15px; margin-bottom:18px; justify-content:space-between; }
+    .form-group { width:48%; display:flex; flex-direction:column; text-align:left; }
+    .form-group.full-width { width:100%; }
+    label { font-weight:600; margin-bottom:6px; font-size:15px; color:#ccc; }
+    input, select { width:100%; padding:12px 10px; border-radius:8px; background:#2b2b2b; border:1px solid #4a4a4a; color:white; font-size:15px; outline:none; }
+    select { appearance:none; cursor:pointer; }
+    select option { background:#000; color:#fff; }
+    input:focus, select:focus { border-color:#777; }
+
+    .buttons { display:flex; gap:15px; margin-top:10px; justify-content:center; }
+    button { padding:12px 20px; border:none; border-radius:8px; cursor:pointer; font-family:'Anton',sans-serif; text-transform:uppercase; font-size:13px; color:white; transition:background 0.2s; }
+    .btn-next { background:#333; }
+    .btn-next:hover { background:#444; }
+    .btn-finalizar { background:#333; padding:14px 30px; border-radius:20px; }
+    .btn-finalizar:hover { background:#444; }
+
+    .resultado, .resultado-tmb { margin-top:12px; font-size:16px; font-weight:600; color:#e6ddc5; text-align:center; }
+
+    /* final result grid - visual like your image */
+    .final-wrapper { width:100%; max-width:880px; padding:10px 10px 30px; }
+    .final-grid { display:flex; gap:28px; justify-content:center; align-items:flex-start; flex-wrap:wrap; margin-top:8px; }
+    .final-box {
+      background: linear-gradient(#202020, rgba(255,255,255,0.01));
+      border-radius: 12px;
+      padding: 22px;
+      width: 280px;
+      text-align: left;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.45);
+      color: #e6e6e6;
+      min-height: 330px;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-start;
+    }
+    .final-box h2 { font-family:'Anton',sans-serif; font-size:20px; margin-bottom:12px; color:#fff; display:flex; align-items:center; gap:10px; }
+    .dot { width:14px; height:14px; border-radius:50%; display:inline-block; margin-right:6px; }
+
+    .final-box p, .final-box li { color:#d1d1d1; font-size:14px; line-height:1.45; margin-bottom:8px; }
+    .final-box ul { margin-left:14px; margin-top:6px; }
+
+    .final-actions { display:flex; justify-content:center; margin-top:22px; }
+    .final-actions .btn-finalizar { width: 160px; }
+
+    /* responsiveness */
+    @media(max-width:980px){
+      .container { max-width:760px; padding:0 16px; }
+      .final-box { width:32%; min-width:240px; }
+    }
+    @media(max-width:780px){
+      .final-grid { flex-direction:column; gap:18px; }
+      .final-box { width:100%; min-height: auto; }
+      .container { max-width:520px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">GYMTEC</div>
+  <ul>
+    <li><a href="#">INÍCIO</a></li>
+    <li><a href="#">IMC & TMB</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <!-- CARD 1: IMC -->
+  <div class="card active" id="cardIMC" aria-live="polite">
+    <h1>Calculo do seu IMC</h1>
+
+    <form id="formIMC" onsubmit="return false">
+      <div class="form-grid">
+        <div class="form-group"><label for="peso">Peso (Kg)</label><input type="number" id="peso" step="0.1" min="20" max="300" required></div>
+        <div class="form-group"><label for="altura">Altura (cm)</label><input type="number" id="altura" step="1" min="100" max="250" required></div>
+        <div class="form-group"><label for="idade">Idade</label><input type="number" id="idade" min="10" max="120" required></div>
+        <div class="form-group"><label for="sexo">Sexo</label>
+          <select id="sexo" required>
+            <option value="">Selecione</option>
+            <option>Masculino</option>
+            <option>Feminino</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button type="button" class="btn-next" id="btnSeguirIMC">Seguir</button>
+      </div>
+    </form>
+
+    <div class="resultado" id="resultadoIMC" aria-live="polite"></div>
+  </div>
+
+  <!-- CARD 2: TMB -->
+  <div class="card" id="cardTMB" aria-live="polite">
+    <h1>Calcule seu TMB</h1>
+
+    <form id="formTMB" onsubmit="return false">
+      <div class="form-grid">
+        <div class="form-group"><label for="pesoTMB">Peso (Kg)</label><input type="number" id="pesoTMB" step="0.1" min="20" max="300" required></div>
+        <div class="form-group"><label for="alturaTMB">Altura (cm)</label><input type="number" id="alturaTMB" step="1" min="100" max="250" required></div>
+        <div class="form-group"><label for="idadeTMB">Idade</label><input type="number" id="idadeTMB" min="10" max="120" required></div>
+        <div class="form-group"><label for="sexoTMB">Sexo</label>
+          <select id="sexoTMB" required>
+            <option value="">Selecione</option>
+            <option>Masculino</option>
+            <option>Feminino</option>
+          </select>
+        </div>
+
+        <!-- atividade e objetivo go here (full-width) -->
+        <div class="form-group full-width">
+          <label for="atividade">Nível de atividade física</label>
+          <select id="atividade" required>
+            <option value="">Selecione</option>
+            <option value="1.2">Sedentário (Pouco ou nenhum exercício)</option>
+            <option value="1.375">Leve (Exercício leve 1-3 dias/semana)</option>
+            <option value="1.55">Moderado (Exercício 3-5 dias/semana)</option>
+            <option value="1.725">Ativo (Exercício 6 dias/semana)</option>
+            <option value="1.9">Muito ativo (Atleta/trabalho físico intenso)</option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="objetivoTMB">Objetivo</label>
+          <select id="objetivoTMB" required>
+            <option value="">Selecione</option>
+            <option value="manter">Manter o peso</option>
+            <option value="perder">Perder peso</option>
+            <option value="ganhar">Ganhar massa</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="buttons">
+        <button type="button" class="btn-next" id="btnSeguirTMB">Seguir</button>
+      </div>
+    </form>
+
+    <div class="resultado-tmb" id="resultadoTMB" aria-live="polite"></div>
+  </div>
+
+  <!-- CARD 3: FINAL (3 boxes) -->
+  <div class="card" id="cardFinal" aria-live="polite">
+    <h1>Resultados</h1>
+
+    <div class="final-wrapper">
+      <div class="final-grid">
+        <div class="final-box" id="boxIMC">
+          <h2 id="titleIMC">Calculo do seu IMC</h2>
+          <div id="textoIMC">
+            <!-- texto dinâmico do IMC vai aqui -->
+          </div>
+        </div>
+
+        <div class="final-box" id="boxTMB">
+          <h2>Resultados</h2>
+          <div id="valorTMB">
+            <!-- texto dinâmico do TMB vai aqui -->
+          </div>
+        </div>
+
+        <div class="final-box" id="boxOBJ">
+          <h2>Objetivo do seu TMB</h2>
+          <div id="textoObjetivo">
+            <!-- texto dinâmico do objetivo vai aqui -->
+          </div>
+        </div>
+      </div>
+
+      <div class="final-actions">
+        <button class="btn-finalizar" id="btnFinalizar">Finalizar</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // helper
+  const get = id => document.getElementById(id);
+
+  // animation helper (keeps previous approach)
+  function showCardWithAnim(currentEl, nextEl) {
+    if (!currentEl || !nextEl || currentEl === nextEl) {
+      document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+      nextEl.classList.add('active');
+      return;
+    }
+    nextEl.classList.add('anim-enter');
+    // force reflow
+    nextEl.getBoundingClientRect();
+
+    currentEl.classList.add('anim-leave');
+    requestAnimationFrame(() => {
+      currentEl.classList.add('anim-leave-to');
+      nextEl.classList.add('anim-enter-to');
+    });
+
+    const time = 420;
+    setTimeout(() => {
+      currentEl.classList.remove('active', 'anim-leave', 'anim-leave-to');
+      nextEl.classList.add('active');
+      nextEl.classList.remove('anim-enter', 'anim-enter-to');
+    }, time);
+  }
+
+  // dynamic text definitions for IMC (exact as you provided)
+  const imcTexts = {
+    abaixo: `
+      <p><strong>IMC abaixo de 18,5 — Abaixo do peso</strong></p>
+      <p>Seu IMC indica que você está abaixo do peso. Isso pode significar que seu corpo não está recebendo todos os nutrientes necessários. É importante manter uma alimentação equilibrada e, se possível, procurar um nutricionista ou médico para uma avaliação mais detalhada.</p>
+      <p><strong>Dicas gerais:</strong></p>
+      <ul>
+        <li>Faça refeições regulares e nutritivas.</li>
+        <li>Inclua fontes de proteínas, carboidratos e gorduras boas.</li>
+        <li>Evite pular refeições.</li>
+      </ul>`,
+
+    normal: `
+      <p><strong>IMC entre 18,5 e 24,9 — Peso normal</strong></p>
+      <p>Parabéns! Seu IMC está dentro da faixa considerada ideal. Isso significa que você está com um peso saudável em relação à sua altura.</p>
+      <p><strong>Dicas para manter:</strong></p>
+      <ul>
+        <li>Continue com uma alimentação equilibrada.</li>
+        <li>Pratique atividades físicas regularmente.</li>
+        <li>Mantenha bons hábitos de sono e hidratação.</li>
+      </ul>`,
+
+    sobrepeso: `
+      <p><strong>IMC entre 25,0 e 29,9 — Sobrepeso</strong></p>
+      <p>Seu IMC indica sobrepeso. Diminua o consumo de ultraprocessados e bebidas açucaradas. Priorize alimentos naturais e ricos em fibras. Pratique atividades físicas regularmente.</p>
+      <p>Consulte um nutricionista para um plano personalizado.</p>`,
+
+    obes1: `
+      <p><strong>IMC entre 30,0 e 34,9 — Obesidade Grau I</strong></p>
+      <p>Seu IMC está na faixa de obesidade grau I. Procure orientação médica e nutricional. Estabeleça metas realistas e mantenha uma rotina de exercícios adequada ao seu nível físico.</p>`,
+
+    obes2: `
+      <p><strong>IMC entre 35,0 e 39,9 — Obesidade Grau II (severa)</strong></p>
+      <p>Seu IMC indica obesidade grau II. É altamente recomendável buscar acompanhamento profissional para planejar mudanças seguras e eficazes.</p>`,
+
+    obes3: `
+      <p><strong>IMC acima de 40 — Obesidade Grau III (mórbida)</strong></p>
+      <p>Seu IMC está na faixa de obesidade mórbida. Procure um médico o quanto antes. Há opções de tratamento nutricional, psicológico e, em alguns casos, cirúrgico. Mudanças graduais e acompanhamento adequado são essenciais.</p>`
+  };
+
+  // objective texts (as you provided)
+  const objetivoTexts = {
+    manter: (maintenance) => `
+      <p><strong>🔵 Para manter o peso</strong></p>
+      <p>Para manter seu peso atual, o ideal é consumir em média <strong>${maintenance} kcal/dia</strong>, equivalente ao seu gasto calórico total.</p>
+      <p><strong>Dicas importantes:</strong></p>
+      <ul>
+        <li>Mantenha uma alimentação variada e balanceada, com boas fontes de proteínas, carboidratos complexos e gorduras boas.</li>
+        <li>Beba bastante água ao longo do dia.</li>
+        <li>Evite o consumo excessivo de alimentos ultraprocessados.</li>
+        <li>Continue com uma rotina de atividade física regular.</li>
+      </ul>
+      <p>⚖️ Objetivo: manter o equilíbrio entre energia ingerida e energia gasta.</p>
+    `,
+    perder: (maintenance, lose) => `
+      <p><strong>🟢 Para perder peso</strong></p>
+      <p>Para perder peso de forma saudável, é recomendado consumir cerca de <strong>${lose} kcal/dia</strong>, ou aproximadamente 300–500 kcal a menos do que seu gasto calórico total (${maintenance} kcal/dia).</p>
+      <p><strong>Dicas práticas:</strong></p>
+      <ul>
+        <li>Prefira alimentos naturais e nutritivos: frutas, verduras, legumes, proteínas magras e grãos integrais.</li>
+        <li>Evite dietas muito restritivas; foque em déficit moderado e sustentável.</li>
+        <li>Inclua exercícios de força e aeróbicos na sua rotina.</li>
+        <li>Durma bem e controle o estresse.</li>
+      </ul>
+      <p>🔥 Objetivo: eliminar gordura corporal e melhorar a composição física com saúde e constância.</p>
+    `,
+    ganhar: (maintenance, gain) => `
+      <p><strong>🟠 Para ganhar massa muscular</strong></p>
+      <p>Se o objetivo é ganhar massa muscular, recomenda-se consumir cerca de <strong>${gain} kcal/dia</strong> (aprox. 300–500 kcal a mais que o gasto total de ${maintenance} kcal/dia).</p>
+      <p><strong>Dicas essenciais:</strong></p>
+      <ul>
+        <li>Priorize proteínas de alta qualidade (carnes magras, ovos, peixes, leite, iogurte, leguminosas).</li>
+        <li>Consuma carboidratos complexos (arroz integral, aveia, batata) para energia de treino.</li>
+        <li>Inclua gorduras boas (azeite, castanhas, abacate).</li>
+        <li>Faça refeições a cada 3–4 horas e mantenha treino de resistência com progressão de carga.</li>
+        <li>Priorize sono e recuperação.</li>
+      </ul>
+      <p>💪 Objetivo: promover o crescimento muscular de forma saudável, com energia adequada e foco em qualidade nutricional.</p>
+    `
+  };
+
+  // get elements
+  const cardIMC = get("cardIMC");
+  const cardTMB = get("cardTMB");
+  const cardFinal = get("cardFinal");
+
+  // store values
+  let computedIMC = null;
+  let imcCategoryKey = null;
+  let computedTMB = null;
+  let maintenanceCalories = null;
+  let selectedObjective = null;
+
+  // helper to set IMC title with dot
+  function setIMCTitleDot(key) {
+    const titleEl = get("titleIMC");
+    let dotColor = "#00a86b"; // default green
+    let label = "Calculo do seu IMC";
+    if (key === "abaixo") { dotColor = "#00a86b"; label = "Calculo do seu IMC"; } // green
+    else if (key === "normal") { dotColor = "#00a86b"; }
+    else if (key === "sobrepeso") { dotColor = "#ffb300"; } // yellow
+    else if (key === "obes1" || key === "obes2" || key === "obes3") { dotColor = "#e03b3b"; } // red
+    // put dot colored span before text
+    titleEl.innerHTML = `<span class="dot" style="background:${dotColor}"></span> ${label}`;
+  }
+
+  // IMC step
+  get("btnSeguirIMC").addEventListener("click", () => {
+    const pesoVal = parseFloat(get("peso").value);
+    const alturaVal = parseFloat(get("altura").value) / 100;
+
+    if (!pesoVal || !alturaVal) {
+      get("resultadoIMC").textContent = "Preencha peso e altura para continuar.";
+      return;
+    }
+
+    const imc = +(pesoVal / (alturaVal * alturaVal)).toFixed(1);
+    computedIMC = imc;
+
+    // define category key
+    if (imc < 18.5) imcCategoryKey = 'abaixo';
+    else if (imc < 24.9) imcCategoryKey = 'normal';
+    else if (imc < 29.9) imcCategoryKey = 'sobrepeso';
+    else if (imc < 34.9) imcCategoryKey = 'obes1';
+    else if (imc < 39.9) imcCategoryKey = 'obes2';
+    else imcCategoryKey = 'obes3';
+
+    // show immediate IMC small result
+    get("resultadoIMC").textContent = `Seu IMC: ${imc}`;
+
+    // prepare final IMC text now (stored for final)
+    get("textoIMC").innerHTML = imcTexts[imcCategoryKey];
+
+    // set colored dot on title
+    setIMCTitleDot(imcCategoryKey);
+
+    // move to TMB
+    showCardWithAnim(cardIMC, cardTMB);
+    setTimeout(()=> get("pesoTMB").focus(), 420);
+  });
+
+  // TMB step
+  get("btnSeguirTMB").addEventListener("click", () => {
+    const pesoVal = parseFloat(get("pesoTMB").value);
+    const alturaVal = parseFloat(get("alturaTMB").value);
+    const idadeVal = parseInt(get("idadeTMB").value, 10);
+    const sexoVal = get("sexoTMB").value;
+    const atividadeVal = parseFloat(get("atividade").value);
+    const objetivoVal = get("objetivoTMB").value;
+
+    if (!pesoVal || !alturaVal || !idadeVal || !sexoVal || !atividadeVal || !objetivoVal) {
+      get("resultadoTMB").textContent = "Preencha todos os campos (atividade e objetivo incluídos).";
+      return;
+    }
+
+    // compute TMB (Harris-Benedict)
+    let tmb = 0;
+    if (sexoVal === "Masculino") {
+      tmb = 88.36 + 13.4 * pesoVal + 4.8 * alturaVal - 5.7 * idadeVal;
+    } else {
+      tmb = 447.6 + 9.2 * pesoVal + 3.1 * alturaVal - 4.3 * idadeVal;
+    }
+    computedTMB = Math.round(tmb);
+
+    // maintenance (TDEE) estimated by activity factor
+    maintenanceCalories = Math.round(computedTMB * atividadeVal);
+
+    // estimates for lose/gain
+    const lose = Math.round(maintenanceCalories - 300);
+    const gain = Math.round(maintenanceCalories + 300);
+
+    // small immediate TMB result
+    get("resultadoTMB").innerHTML = `${computedTMB} kcal (TMB). Est. manutenção: ${maintenanceCalories} kcal.`;
+
+    // populate final TMB box
+    get("valorTMB").innerHTML = `
+      <p>Sua Taxa Metabólica Basal (TMB) estimada é <strong>${computedTMB} kcal/dia</strong>.</p>
+      <p>Estimativa de gasto diário (usando nível de atividade selecionado): <strong>${maintenanceCalories} kcal/dia</strong>.</p>
+      <p>Estimativas de objetivo:</p>
+      <ul>
+        <li>Perder peso: cerca de <strong>${lose} kcal/dia</strong> (déficit ~300 kcal).</li>
+        <li>Manter peso: cerca de <strong>${maintenanceCalories} kcal/dia</strong>.</li>
+        <li>Ganhar massa: cerca de <strong>${gain} kcal/dia</strong> (superávit ~300 kcal).</li>
+      </ul>`;
+
+    // store selected objective for final box
+    selectedObjective = objetivoVal;
+
+    // prepare objective text for final
+    if (selectedObjective === "manter") {
+      get("textoObjetivo").innerHTML = objetivoTexts.manter(maintenanceCalories);
+    } else if (selectedObjective === "perder") {
+      get("textoObjetivo").innerHTML = objetivoTexts.perder(maintenanceCalories, lose);
+    } else {
+      get("textoObjetivo").innerHTML = objetivoTexts.ganhar(maintenanceCalories, gain);
+    }
+
+    // move to final
+    showCardWithAnim(cardTMB, cardFinal);
+    setTimeout(()=> get("btnFinalizar").focus(), 420);
+  });
+
+  // Finalizar: reset everything and go back
+  get("btnFinalizar").addEventListener("click", () => {
+    // reset forms
+    get("formIMC").reset();
+    get("formTMB").reset();
+    // clear stored values
+    computedIMC = null;
+    imcCategoryKey = null;
+    computedTMB = null;
+    maintenanceCalories = null;
+    selectedObjective = null;
+    // clear displays
+    get("resultadoIMC").textContent = "";
+    get("resultadoTMB").textContent = "";
+    get("textoIMC").innerHTML = "";
+    get("valorTMB").innerHTML = "";
+    get("textoObjetivo").innerHTML = "";
+    // reset IMC title
+    get("titleIMC").innerHTML = "Calculo do seu IMC";
+    // animate back to IMC
+    showCardWithAnim(cardFinal, cardIMC);
+    setTimeout(()=> get("peso").focus(), 420);
+  });
+
+  // initial focus
+  window.addEventListener("load", ()=> setTimeout(()=> get("peso").focus(), 120));
+</script>
+
+</body>
+</html>
