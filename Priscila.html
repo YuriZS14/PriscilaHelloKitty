@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pra você</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1a1a1a, #000);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: #0b0b0b;
+      max-width: 420px;
+      width: 100%;
+      border-radius: 20px;
+      padding: 30px 25px;
+      text-align: center;
+      box-shadow: 
+        0 20px 60px rgba(0,0,0,0.8),
+        0 0 40px rgba(255, 77, 109, 0.15);
+      border: 1px solid rgba(255,255,255,0.05);
+      animation: fadeIn 1.5s ease;
+    }
+
+    h1 {
+      color: #ff4d6d;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    p {
+      color: #bbb;
+      line-height: 1.6;
+      margin: 15px 0;
+    }
+
+    .heart {
+      font-size: 38px;
+      color: #ff4d6d;
+      animation: pulse 1.5s infinite;
+    }
+
+    button {
+      margin-top: 20px;
+      background: linear-gradient(135deg, #ff4d6d, #8b0000);
+      border: none;
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 30px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(255,77,109,0.4);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="heart">❤️</div>
+
+    <h1>Chega aqui</h1>
+
+    <p>
+      Fiz isso porque pensei em você.
+      Sem muito motivo,
+      só rolou tlgd.
+    </p>
+
+    <p>
+      Você chegou do nada, meio sem aviso
+      e ficou.
+      Ficou na cabeça,
+      nas músicas que escuto,
+      naquele sorrisin bobo quando vejo teu nome na tela.
+    </p>
+
+    <p>
+      Eu não sei disfarçar.
+      Sou bobo.
+      E gosto das nossas conversas mais pra frente.
+    </p>
+
+    <button onclick="mostrarMensagem()">continua</button>
+
+    <p id="mensagem" class="hidden">
+      Gosto de você.
+      Do seu jeito meio maluca,
+      da sua presença que me bagunça,
+      da sua energia contagiante.
+      <br><br>
+      Do seu estilo, 
+      gata em qualquer vertente,
+      Da sua voz e risada, essa boca mexe comigo KKKKKKK,
+      e do quanto você chama minha atenção sem nem tentar.
+      Minha gata é demais, piro em você.
+      <br><br>
+      Não prometo nada fora da realidade,
+      você e eu estamos correndo atrás das nossas coisas...
+      mas sendo sincero:
+      se for pra tentar algo,
+      eu queria que fosse com você.
+    </p>
+  </div>
+
+  <script>
+    function mostrarMensagem() {
+      document.getElementById('mensagem').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
